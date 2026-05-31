@@ -1,0 +1,203 @@
+/* ═══════════════════════════════════════════════════════════════════
+   M.I.L.O. — styles.css
+   Theme: Slate & Charcoal Matte Glassmorphism
+   ─────────────────────────────────────────────────────────────────
+   Table of Contents:
+     1. Design Tokens (CSS Custom Properties)
+     2. Reset & Base
+     3. Boot Splash
+     4. App Shell & Layout
+     5. Topbar
+     6. Sidebar & Panels
+     7. Form Controls (fields, selects, buttons)
+     8. Mic Button & Waveform Visualizers
+     9. Telemetry Strip
+    10. Canvas (main area)
+    11. Tab System
+    12. Chat Feed & Message Bubbles
+    13. Welcome Card & Sphere
+    14. Input Bar
+    15. Animations & Keyframes
+═══════════════════════════════════════════════════════════════════ */
+
+/* ─── 1. DESIGN TOKENS ──────────────────────────────────────────── */
+:root {
+  --bg-void:       #0c0d0f;   
+  --bg-base:       #111214;   
+  --bg-surface:    #161719;   
+  --bg-raised:     #1c1d20;   
+  --bg-hover:      #242528;   
+  --bg-glass:      rgba(22, 23, 25, 0.72);   
+  --bg-glass-light:rgba(28, 29, 32, 0.60);
+
+  --text-primary:  #e2e8f0;   
+  --text-secondary:#94a3b8;   
+  --text-muted:    #4b5563;   
+  --text-code:     #cbd5e1;   
+
+  --border-dim:    rgba(148, 163, 184, 0.08);
+  --border-mid:    rgba(148, 163, 184, 0.14);
+  --border-bright: rgba(226, 232, 240, 0.22);
+  --border-active: rgba(226, 232, 240, 0.45);
+
+  --accent:        #e2e8f0;
+  --accent-dim:    rgba(226, 232, 240, 0.18);
+  --accent-glow:   rgba(226, 232, 240, 0.06);
+
+  --status-online:  #34d399;
+  --status-warning: #fbbf24;
+  --status-error:   #f87171;
+  --status-idle:    #94a3b8;
+
+  --font-display: 'Syne', sans-serif;
+  --font-ui:      'Inter', sans-serif;
+  --font-mono:    'JetBrains Mono', monospace;
+
+  --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px;
+  --sp-5: 20px; --sp-6: 24px; --sp-8: 32px;
+
+  --r-sm:  4px; --r-md:  8px; --r-lg:  12px; --r-xl:  16px;
+
+  --topbar-h:   52px;
+  --sidebar-w:  280px;
+
+  --t-fast:  80ms ease; --t-base:  160ms ease; --t-slow:  300ms ease;
+}
+
+/* ─── 2. RESET & BASE ───────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 13px; -webkit-font-smoothing: antialiased; }
+body {
+  font-family: var(--font-ui); background: var(--bg-void);
+  color: var(--text-primary); height: 100dvh; overflow: hidden; user-select: none;
+}
+button { cursor: pointer; border: none; background: none; color: inherit; font: inherit; }
+input, select, textarea { font: inherit; color: inherit; background: none; border: none; outline: none; }
+textarea { resize: none; }
+canvas { display: block; }
+.chat-feed, .system-log, .output-canvas { user-select: text; }
+
+/* ─── 3. BOOT SPLASH ────────────────────────────────────────────── */
+.boot-splash {
+  position: fixed; inset: 0; background: var(--bg-void);
+  display: flex; align-items: center; justify-content: center; z-index: 9999;
+}
+.boot-canvas { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0.35; }
+.boot-content { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; gap: var(--sp-5); }
+.boot-rings { position: relative; width: 120px; height: 120px; display: flex; align-items: center; justify-content: center; }
+.boot-ring { position: absolute; border-radius: 50%; border: 1px solid var(--border-mid); }
+.boot-ring--1 { width: 120px; height: 120px; animation: ring-spin 8s linear infinite; }
+.boot-ring--2 { width: 88px; height: 88px; border-style: dashed; animation: ring-spin 5s linear infinite reverse; }
+.boot-ring--3 { width: 60px; height: 60px; animation: ring-spin 3s linear infinite; }
+.boot-core { width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; animation: pulse-glow 2s ease-in-out infinite; }
+.boot-title { font-family: var(--font-display); font-size: 2.8rem; font-weight: 800; letter-spacing: 0.25em; }
+.boot-subtitle { font-family: var(--font-mono); font-size: 0.85rem; letter-spacing: 0.18em; color: var(--text-secondary); text-transform: uppercase; }
+.boot-log { display: flex; flex-direction: column; gap: var(--sp-2); min-height: 120px; width: 380px; }
+.boot-log-line { font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-muted); text-align: left; opacity: 1; }
+.boot-progress { width: 280px; height: 2px; background: var(--border-dim); overflow: hidden; }
+.boot-progress-fill { height: 100%; width: 100%; background: var(--text-primary); transition: width 0.3s ease; }
+
+/* ─── 4. APP SHELL & LAYOUT ─────────────────────────────────────── */
+.app-shell { display: flex; flex-direction: column; height: 100dvh; overflow: hidden; background: var(--bg-void); }
+.app-shell.hidden { display: none !important; }
+.workspace { display: flex; flex: 1; overflow: hidden; }
+
+/* ─── 5. TOPBAR ─────────────────────────────────────────────────── */
+.topbar {
+  height: var(--topbar-h); background: var(--bg-glass); backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border-dim); display: flex; align-items: center; justify-content: space-between; padding: 0 var(--sp-5);
+}
+.topbar__left { display: flex; align-items: center; gap: var(--sp-3); }
+.topbar__orb { width: 8px; height: 8px; border-radius: 50%; background: var(--status-online); box-shadow: 0 0 8px var(--status-online); }
+.topbar__title { font-family: var(--font-mono); font-size: 0.85rem; letter-spacing: 0.05em; color: var(--text-secondary); }
+
+/* ─── 6. SIDEBAR & PANELS ───────────────────────────────────────── */
+.sidebar { width: var(--sidebar-w); background: var(--bg-surface); border-right: 1px solid var(--border-dim); display: flex; flex-direction: column; }
+.panel-header { padding: var(--sp-4); font-family: var(--font-display); font-size: 0.8rem; font-weight: 700; letter-spacing: 0.05em; color: var(--text-secondary); border-bottom: 1px solid var(--border-dim); }
+.panel-body { padding: var(--sp-4); display: flex; flex-direction: column; gap: var(--sp-4); }
+.sidebar__logs { background: rgba(0,0,0,0.15); font-family: var(--font-mono); font-size: 0.78rem; padding: var(--sp-3); }
+.log-entry { margin-bottom: 6px; line-height: 1.4; }
+.log-ts { color: var(--text-muted); margin-right: 8px; }
+.log-entry--success { color: var(--status-online); }
+.log-entry--info { color: var(--text-secondary); }
+
+/* ─── 7. FORM CONTROLS ──────────────────────────────────────────── */
+.field { display: flex; flex-direction: column; gap: var(--sp-1); }
+.field__label { font-family: var(--font-mono); font-size: 0.65rem; color: var(--text-secondary); letter-spacing: 0.03em; }
+.field__input { background: var(--bg-raised); border: 1px solid var(--border-mid); padding: var(--sp-2) var(--sp-3); border-radius: var(--r-sm); color: var(--text-primary); width: 100%; transition: border-color var(--t-fast); }
+.field__input:focus { border-color: var(--border-active); }
+.btn-primary { background: var(--text-primary); color: var(--bg-void); font-family: var(--font-mono); font-size: 0.75rem; font-weight: 600; padding: var(--sp-3); border-radius: var(--r-sm); text-align: center; text-transform: uppercase; width: 100%; }
+.btn-primary:hover { background: #ffffff; }
+
+/* ─── 8. MIC BUTTON & WAVEFORM VISUALIZERS ────────────────────── */
+.input-container { padding: var(--sp-4); border-top: 1px solid var(--border-dim); background: var(--bg-surface); }
+.waveform-container { display: flex; flex-direction: column; gap: 4px; margin-bottom: var(--sp-3); height: 28px; position: relative; }
+.waveform-canvas { width: 100%; height: 12px; opacity: 0.6; }
+.input-bar { display: flex; align-items: center; gap: var(--sp-3); background: var(--bg-raised); border: 1px solid var(--border-mid); padding: var(--sp-2); border-radius: var(--r-xl); }
+.btn-mic { width: 32px; height: 32px; background: rgba(255,255,255,0.05); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--text-secondary); }
+.input-bar__textarea { flex: 1; height: 24px; padding: var(--sp-1) 0; font-size: 0.95rem; line-height: 1.4; color: var(--text-primary); }
+.btn-send { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: var(--text-muted); }
+
+/* ─── 10. CANVAS (MAIN AREA) ────────────────────────────────────── */
+.main-canvas { flex: 1; display: flex; flex-direction: column; background: var(--bg-base); }
+.tab-bar { height: 40px; border-bottom: 1px solid var(--border-dim); display: flex; padding: 0 var(--sp-4); background: var(--bg-surface); }
+.tab-btn { padding: 0 var(--sp-4); font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-secondary); border-bottom: 2px solid transparent; }
+.tab-btn.active { color: var(--text-primary); border-bottom-color: var(--text-primary); }
+.canvas-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+.tab-content { display: none; flex: 1; flex-direction: column; overflow: hidden; }
+.tab-content.active { display: flex; }
+
+/* ─── 12. CHAT FEED & MESSAGE BUBBLES ──────────────────────────── */
+.chat-feed { flex: 1; overflow-y: auto; padding: var(--sp-5); display: flex; flex-direction: column; gap: var(--sp-4); }
+.welcome-card { margin: auto; display: flex; flex-direction: column; align-items: center; gap: var(--sp-4); text-align: center; padding: var(--sp-6); background: var(--bg-surface); border: 1px solid var(--border-dim); border-radius: var(--r-lg); }
+.msg-wrap { display: flex; flex-direction: column; max-width: 80%; animation: msg-enter var(--t-base) forwards; }
+.msg-wrap--milo { align-self: flex-start; }
+.msg__meta { display: flex; gap: var(--sp-3); font-family: var(--font-mono); font-size: 0.65rem; color: var(--text-secondary); margin-bottom: 4px; }
+.msg__bubble { background: var(--bg-surface); border: 1px solid var(--border-mid); padding: var(--sp-3) var(--sp-4); border-radius: 0 var(--r-lg) var(--r-lg) var(--r-lg); line-height: 1.5; font-size: 0.95rem; }
+.inline-code { font-family: var(--font-mono); background: var(--bg-raised); padding: 2px 4px; border-radius: var(--r-sm); font-size: 0.85rem; color: var(--text-code); }
+
+/* ─── 20. SETTINGS MODAL ────────────────────────────────────────── */
+.settings-modal { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 1000; }
+.settings-modal.hidden { display: none !important; }
+.settings-modal__backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); }
+.settings-modal__card { position: relative; z-index: 2; width: 440px; background: var(--bg-surface); border: 1px solid var(--border-bright); border-radius: var(--r-lg); display: flex; flex-direction: column; }
+.settings-modal__header { padding: var(--sp-4); font-family: var(--font-display); font-weight: 700; border-bottom: 1px solid var(--border-dim); display: flex; justify-content: space-between; align-items: center; }
+.settings-modal__body { padding: var(--sp-5); display: flex; flex-direction: column; gap: var(--sp-4); }
+
+/* ─── 22. ANIMATIONS & KEYFRAMES ────────────────────────────────── */
+@keyframes ring-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+@keyframes pulse-glow { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+@keyframes msg-enter { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+/* FIXED: Appended telemetry stylesheet metrics missing terminal bounds rules */
+.telem-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+.telem-key {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  color: var(--text-muted);
+  width: 32px;
+}
+.telem-bar-wrap {
+  flex: 1;
+  height: 2px;
+  background: var(--border-dim);
+  border-radius: 1px;
+  overflow: hidden;
+}
+.telem-bar {
+  height: 100%;
+  width: 0%;
+  background: var(--text-secondary);
+  transition: width 0.2s ease;
+}
+.telem-val {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--text-secondary);
+  width: 55px;
+  text-align: right;
+}
